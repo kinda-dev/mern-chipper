@@ -36,7 +36,7 @@ router.post('/',
   }
 );
 
-// get route
+// get route, index route to get all the tweets back
 router.get('/', (req, res) => {
     Tweet.find()
         .sort({ date: -1 })
@@ -44,7 +44,9 @@ router.get('/', (req, res) => {
         .catch(err => res.status(404).json({ notweetsfound: 'No tweets found' }));
 });
 
+// get route, show route filtering the tweets by user
 router.get('/user/:user_id', (req, res) => {
+    // find is the filter
     Tweet.find({user: req.params.user_id})
         .then(tweets => res.json(tweets))
         .catch(err =>
@@ -53,6 +55,7 @@ router.get('/user/:user_id', (req, res) => {
     );
 });
 
+// get route, show route filtered by tweet id
 router.get('/:id', (req, res) => {
     Tweet.findById(req.params.id)
         .then(tweet => res.json(tweet))
