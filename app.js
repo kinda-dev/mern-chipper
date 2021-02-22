@@ -15,6 +15,15 @@ const User = require('./models/User')
 const mongoose = require('mongoose');
 const db = require('./config/keys').mongoURI;
 
+// require passport to deal with jtw
+const passport = require('passport');
+
+// middleware to initialize passport
+app.use(passport.initialize());
+
+// require the configuration file for passport
+require('./config/passport')(passport);
+
 // .then it's the promise coming back, else catch whatever
 mongoose
   .connect(db, { useNewUrlParser: true })
@@ -28,18 +37,22 @@ app.use(bodyParser.urlencoded({
 // using body parser json to tell app to respond to json requests
 app.use(bodyParser.json());
 
+// the below route has been canceled after creating the passport file and logic
+
 // app is listening for a get request on the give route and send a response, not
 // using the request attribute yet 
-app.get("/", (req, res) => {
-  // create a new user model and save it
-  const user = new User({
-    handle: 'franco',
-    email: 'franco@franco.com',
-    password: 'fracothegreat'
-  })
-  user.save()
-  res.send("Ciao Amici")
-});
+// app.get("/", (req, res) => {
+//   // create a new user model and save it
+//   const user = new User({
+//     handle: 'franco',
+//     email: 'franco@franco.com',
+//     password: 'fracothegreat'
+//   })
+//   user.save()
+//   res.send("Ciao Amici")
+// });
+
+// ******************************************************************
 
 
 // tell express to use routes, if we get a request that matches the route

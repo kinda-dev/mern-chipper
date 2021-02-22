@@ -14,10 +14,28 @@ const keys = require('../../config/keys');
 // require jason web token and assign to variable jwt
 const jwt = require('jsonwebtoken');
 
+// require passport to create private routes
+const passport = require('passport');
+
+
 //following we have the routes
 router.get("/test", (req, res) => {
     res.json({ msg: "This is the users route" })
 });
+
+// private route below *** thyis wasn't working
+// router.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
+//     res.json({msg: 'Success'});
+//   })
+
+// private route that returns the user
+router.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
+    res.json({
+      id: req.user.id,
+      handle: req.user.handle,
+      email: req.user.email
+    });
+  })
 
 
 // register route and logic
@@ -53,8 +71,22 @@ router.post('/register', (req, res) => {
         bcrypt.hash(newUser.password, salt, (err, hash) => {
           if (err) throw err;
           newUser.password = hash;
-          newUser.save()
-            .then(user => res.json(user))
+          newUser
+            .save()
+            // this was to test after first set up
+            // .then(user => res.json(user))
+
+            //this is to assign a jason web token after user register
+            .then(user => {
+                const payload = { id: user.id, handle: user.handle };
+  
+                jwt.sign(payload, keys.secretOrKey, { expiresIn: 3600 }, (err, token) => {
+                  res.json({
+                    success: true,
+                    token: "Bearer " + token
+                  });
+                });
+            })
             .catch(err => console.log(err));
         })
       })
@@ -72,16 +104,41 @@ router.post('/login', (req, res) => {
         if (!user) {
           return res.status(404).json({email: 'This user does not exist'});
         }
-  
+  // this was for testing purposes
+        // bcrypt.compare(password, user.password)
+        //     .then(isMatch => {
+        //     if (isMatch) {
+        //       res.json({msg: 'Success'});
+        //     } else {
+        //       return res.status(400).json({password: 'Incorrect password'});
+        //     }
+        // })
+
+    // this is to assign a jason web token
         bcrypt.compare(password, user.password)
-          .then(isMatch => {
+            .then(isMatch => {
             if (isMatch) {
-              res.json({msg: 'Success'});
+                // sending back the info that we want in the payload
+                const payload = {id: user.id, handle: user.handle, email: user.email};
+                // 1 arg is payload, 2 is secret key, 3 option hash for the key to expire
+                // 4 callback once we created this jwt, returns error or token
+                jwt.sign(
+                payload,
+                keys.secretOrKey,
+              // Tell the key to expire in one hour
+                {expiresIn: 3600},
+                (err, token) => {
+                    res.json({
+                    success: true,
+                    token: 'Bearer ' + token
+                    });
+                });
             } else {
-              return res.status(400).json({password: 'Incorrect password'});
+                errors.password = "Incorrect password";
+                return res.status(400).json(errors);
             }
-          })
-      })
-  })
+        })
+    })
+})
 
 module.exports = router;
