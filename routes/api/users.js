@@ -17,6 +17,9 @@ const jwt = require('jsonwebtoken');
 // require passport to create private routes
 const passport = require('passport');
 
+// imprting validations
+const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 //following we have the routes
 router.get("/test", (req, res) => {
@@ -40,9 +43,16 @@ router.get('/current', passport.authenticate('jwt', {session: false}), (req, res
 
 // register route and logic
 router.post('/register', (req, res) => {
+    // validations, object destructuring to get the fieldsn we are importing 
+    const { errors, isValid } = validateRegisterInput(req.body);
+
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
+
     // user findone look up for the user to see if it exist already
     // looking in the request body for the email
-        User.findOne({email: req.body.email})
+    User.findOne({email: req.body.email})
     // condition to see if user already exist and what to do
     // from the comeback promise
     .then(user => {
@@ -96,6 +106,13 @@ router.post('/register', (req, res) => {
 
 // login route and login
 router.post('/login', (req, res) => {
+    // Vaildations
+    const { errors, isValid } = validateLoginInput(req.body);
+
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
+
     const email = req.body.email;
     const password = req.body.password;
   
