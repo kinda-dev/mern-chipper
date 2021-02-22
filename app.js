@@ -1,4 +1,3 @@
-const { response } = require("express");
 const express = require("express");
 const app = express();
 
@@ -15,7 +14,7 @@ const User = require('./models/User')
 // below lines are for mongoDb connection
 const mongoose = require('mongoose');
 const db = require('./config/keys').mongoURI;
-const { json } = require("body-parser");
+
 // .then it's the promise coming back, else catch whatever
 mongoose
   .connect(db, { useNewUrlParser: true })
@@ -27,7 +26,7 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 // using body parser json to tell app to respond to json requests
-app.use(bodyParser, json());
+app.use(bodyParser.json());
 
 // app is listening for a get request on the give route and send a response, not
 // using the request attribute yet 
@@ -41,6 +40,7 @@ app.get("/", (req, res) => {
   user.save()
   res.send("Ciao Amici")
 });
+
 
 // tell express to use routes, if we get a request that matches the route
 // we're going to use the function that we pass as second argument
